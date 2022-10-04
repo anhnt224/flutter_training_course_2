@@ -1,7 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_training_course/screens/home_screen.dart';
-import 'package:flutter_training_course/widgets/user_image_widget.dart';
-import 'dart:developer' as devtools show log;
+
+import 'models/login_resp.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,134 +28,42 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
+        primaryColor: Colors.yellow,
+        secondaryHeaderColor: Colors.amber,
       ),
       themeMode: ThemeMode.dark,
-      home: Material(child: HomeScreen()),
+      home: Material(child: Scaffold(body: const HomePage())),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
+  void _convertJsonToResp(BuildContext context) async {
+    // Lấy String từ file resp.json
+    String str =
+        await DefaultAssetBundle.of(context).loadString("jsons/resp.json");
+    print("STRING: $str");
 
-class _HomeScreenState extends State<HomeScreen> {
-  String _title = "Màu xanh";
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            _title,
-            style: TextStyle(
-                color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
-          ),
-          SizedBox(
-            height: 16,
-          ),
-          TrafficLightWidget(
-            width: 80,
-            height: 160,
-            onColorChanged: (color) {
-              setState(() {
-                if (color == Colors.green) {
-                  _title = "Màu xanh";
-                } else {
-                  _title = "Màu đỏ";
-                }
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
+    //Chuyển từ String sang json (Map<String, dynamic>)
+    final json = jsonDecode(str);
+    print("MAP: $json");
 
-// Co 2 mau - do, xanh
-class TrafficLightWidget extends StatefulWidget {
-  const TrafficLightWidget({
-    Key? key,
-    required this.height,
-    required this.width,
-    required this.onColorChanged,
-  }) : super(key: key);
-
-  final double height; // pixel
-  final double width;
-  final ValueChanged<Color> onColorChanged;
-
-  @override
-  State<TrafficLightWidget> createState() => _TrafficLightWidgetState();
-}
-
-class _TrafficLightWidgetState extends State<TrafficLightWidget> {
-  Color currentColor = Colors.red;
-
-  void _onRedLightTap() {
-    // notify
-    widget.onColorChanged(Colors.red);
-
-    //update UI
-    setState(() {
-      currentColor = Colors.red;
-    });
-  }
-
-  void _onGreenLightTap() {
-    widget.onColorChanged(Colors.green);
-    setState(() {
-      currentColor = Colors.green;
-    });
+    // Chuyển từ json sang LoginResp
+    final resp = LoginResp.fromJson(json);
+    print(resp.toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    devtools.log('Rebuild Traffic light');
     return Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BoxDecoration(
-        color: Colors.grey.withAlpha(100),
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: _onRedLightTap,
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: currentColor == Colors.red ? Colors.red : Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            GestureDetector(
-              onTap: _onGreenLightTap,
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color:
-                      currentColor == Colors.green ? Colors.green : Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            )
-          ],
+        child: ElevatedButton(
+          onPressed: () {
+            _convertJsonToResp(context);
+          },
+          child: Text('Convert json to object'),
         ),
       ),
     );
